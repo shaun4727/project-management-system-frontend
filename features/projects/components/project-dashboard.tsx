@@ -5,6 +5,7 @@ import { gsap } from 'gsap';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef } from 'react';
+import { CreateProjectModal } from './create-project-modal';
 
 // Define the shape of your real project data
 interface RealProject {
@@ -96,10 +97,8 @@ export default function ProjectDashboard({ initialProjects, paginationMeta }: Pr
 						</button>
 					))}
 				</div>
-				{/* ... (rest of your controls) ... */}
+				<CreateProjectModal />
 			</div>
-
-			{/* ... (Keep your Stats Cards mapping the same way) ... */}
 
 			{/* Data Table */}
 			<div className="overflow-x-auto bg-white border border-slate-200 rounded-xl shadow-sm">
@@ -143,7 +142,6 @@ export default function ProjectDashboard({ initialProjects, paginationMeta }: Pr
 										{project.status}
 									</span>
 								</td>
-								{/* ... map the rest of the columns using project.startDate, project.budget etc ... */}
 							</tr>
 						))}
 					</tbody>

@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, Menu, Plus, Search } from 'lucide-react';
+import { Bell, Menu, Search } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Sidebar } from '../shared/sidebar/Sidebar';
@@ -42,9 +42,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 						<button className="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-50 transition-colors">
 							<Bell className="h-5 w-5" />
 						</button>
-						<button className="hidden sm:flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors shadow-sm">
-							<Plus className="h-4 w-4" /> New Project
-						</button>
+
 						<div className="h-8 w-8 rounded-full bg-indigo-100 border border-indigo-200 flex items-center justify-center text-indigo-700 font-bold text-xs ml-2 shadow-sm cursor-pointer">
 							AD
 						</div>
