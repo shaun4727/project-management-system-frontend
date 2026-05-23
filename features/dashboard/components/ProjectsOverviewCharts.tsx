@@ -1,50 +1,69 @@
 'use client';
 
-import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
+import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 
-const data = [
-	{ name: 'Completed', value: 12, color: '#22c55e' }, // green-500
-	{ name: 'In Progress', value: 8, color: '#eab308' }, // yellow-500
-	{ name: 'Not Started', value: 4, color: '#6366f1' }, // indigo-500
-];
+interface ProjectsOverviewChartProps {
+	data: {
+		totalProjects: number;
+		activeTasks: number;
+		completedTasks: number;
+	};
+}
 
-export function ProjectsOverviewChart() {
+export function ProjectsOverviewChart({ data }: ProjectsOverviewChartProps) {
+	// Format the data for Recharts
+	const chartData = [
+		{ name: 'Active Tasks', value: data.activeTasks, color: '#4f46e5' }, // Indigo-600
+		{ name: 'Completed Tasks', value: data.completedTasks, color: '#10b981' }, // Emerald-500
+	];
+
+	// If there are zero tasks, show a fallback state so the chart isn't just blank
+	const totalTasks = data.activeTasks + data.completedTasks;
+	if (totalTasks === 0) {
+		return (
+			<div className="flex flex-col items-center justify-center h-full text-slate-400">
+				<span className="text-sm font-medium">No tasks available to chart</span>
+			</div>
+		);
+	}
+
 	return (
-		<div className="flex items-center gap-6">
-			<div className="h-40 w-40 shrink-0">
-				<ResponsiveContainer width="100%" height="100%">
-					<PieChart>
-						<Pie
-							data={data}
-							innerRadius={50}
-							outerRadius={70}
-							paddingAngle={5}
-							dataKey="value"
-							stroke="none"
-						>
-							{data.map((entry, index) => (
-								<Cell key={`cell-${index}`} fill={entry.color} />
-							))}
-						</Pie>
-					</PieChart>
-				</ResponsiveContainer>
-			</div>
-
-			{/* Custom Legend to match image exactly */}
-			<div className="flex flex-col gap-3 flex-1">
-				{data.map((item) => (
-					<div key={item.name} className="flex items-center justify-between text-sm">
-						<div className="flex items-center gap-2">
-							<div className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
-							<span className="text-slate-600">{item.name}</span>
-						</div>
-						<span className="font-semibold text-slate-900">
-							{item.value}{' '}
-							<span className="text-slate-400 font-normal">({Math.round((item.value / 24) * 100)}%)</span>
-						</span>
-					</div>
-				))}
-			</div>
+		<div className="w-full h-full min-h-[250px]">
+			<ResponsiveContainer width="100%" height="100%">
+				<PieChart>
+					<Pie
+						data={chartData}
+						cx="50%"
+						cy="50%"
+						innerRadius={60} // This creates the "Doughnut" hole
+						outerRadius={80}
+						paddingAngle={5}
+						dataKey="value"
+						stroke="none"
+					>
+						{chartData.map((entry, index) => (
+							<Cell key={`cell-${index}`} fill={entry.color} />
+						))}
+					</Pie>
+					<Tooltip
+						contentStyle={{
+							borderRadius: '12px',
+							border: '1px solid #f1f5f9',
+							boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+							fontWeight: 500,
+						}}
+						itemStyle={{ color: '#1e293b' }}
+					/>
+					<Legend
+						verticalAlign="bottom"
+						height={36}
+						iconType="circle"
+						formatter={(value, entry: any) => (
+							<span className="text-sm font-medium text-slate-600 ml-1">{value}</span>
+						)}
+					/>
+				</PieChart>
+			</ResponsiveContainer>
 		</div>
 	);
 }

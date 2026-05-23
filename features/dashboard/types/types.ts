@@ -1,7 +1,7 @@
 export interface DashboardStats {
 	totalProjects: number;
 	activeTasks: number;
-	tasksCompleted: number;
+	completedTasks: number;
 	totalHoursLogged: number;
 }
 
@@ -19,11 +19,7 @@ export interface DashboardSummaryResponse {
 	success: boolean;
 	data: {
 		stats: DashboardStats;
-		overview: {
-			completed: number;
-			inProgress: number;
-			notStarted: number;
-		};
+		overview: DashboardStats;
 		recentActivity: Activity[];
 		// You can add myTasks and productivity array types here as your API expands
 	};

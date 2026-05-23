@@ -9,7 +9,7 @@ export async function fetchDashboardSummary(): Promise<DashboardSummaryResponse>
 	const token = cookieStore.get('mpms_token')?.value;
 
 	// 2. Call the Express API
-	const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/dashboard/summary`, {
+	const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/summary`, {
 		method: 'GET',
 		headers: {
 			'Content-Type': 'application/json',
