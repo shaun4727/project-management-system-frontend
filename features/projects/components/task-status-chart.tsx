@@ -1,6 +1,7 @@
 'use client';
 
 import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
+import { SummaryProps } from '../types/project.types';
 
 const data = [
 	{ name: 'Todo', value: 24, percentage: 30, color: '#3b82f6' }, // blue-500
@@ -9,7 +10,7 @@ const data = [
 	{ name: 'Done', value: 16, percentage: 20, color: '#6366f1' }, // indigo-500
 ];
 
-export function TaskStatusChart() {
+export function TaskStatusChart({ stats }: SummaryProps) {
 	return (
 		<div className="flex flex-col sm:flex-row items-center gap-6 h-full w-full">
 			<div className="h-40 w-40 shrink-0">

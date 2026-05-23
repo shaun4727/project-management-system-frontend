@@ -1,12 +1,4 @@
-interface SummaryProps {
-	stats: {
-		total: number;
-		completed: number;
-		inProgress: number;
-		reviewRequired: number;
-		todo: number;
-	};
-}
+import { SummaryProps } from '../types/project.types';
 
 // Server Component
 export function ProjectSummary({ stats }: SummaryProps) {

@@ -19,6 +19,49 @@ export interface Project {
 	iconColor: string;
 }
 
+export interface SummaryProps {
+	stats: {
+		total: number;
+		completed: number;
+		inProgress: number;
+		reviewRequired: number;
+		todo: number;
+	};
+}
+
+export interface Task {
+	status: 'TODO' | 'IN_PROGRESS' | 'REVIEW_REQUIRED' | 'DONE';
+}
+
+export interface Sprint {
+	id: string;
+	title: string;
+	sprintNumber: number;
+	startDate: string | Date;
+	endDate: string | Date;
+	tasks?: Task[];
+}
+
+export interface SprintListProps {
+	sprints: Sprint[];
+}
+
+export interface ActivityUser {
+	name: string;
+}
+
+export interface Activity {
+	id: string;
+	action: string; // e.g., "FILE_UPLOADED", "STATUS_CHANGED"
+	details: string; // e.g., "moved API Integration to In Progress"
+	createdAt: string | Date;
+	user: ActivityUser;
+}
+
+export interface ActivityTimelineProps {
+	activities: Activity[];
+}
+
 // mockData.ts
 
 export const mockProjects: Project[] = [
