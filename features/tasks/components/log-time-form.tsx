@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useState } from 'react';
 
 // CLIENT COMPONENT (Manages Form State)
-export function LogTimeForm() {
+export function LogTimeForm({ taskId }: { taskId: string }) {
 	const [hours, setHours] = useState('2.5');
 	const [description, setDescription] = useState('Implemented user management API endpoints.');
 	const [isSubmitting, setIsSubmitting] = useState(false);
