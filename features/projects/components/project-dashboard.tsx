@@ -114,11 +114,10 @@ export default function ProjectDashboard({ initialProjects, paginationMeta }: Pr
 
 	const handleDelete = (e: React.MouseEvent, id: string) => {
 		e.stopPropagation();
-		if (window.confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
-			startTransition(() => {
-				deleteProjectAction(id);
-			});
-		}
+
+		startTransition(() => {
+			deleteProjectAction(id);
+		});
 	};
 
 	return (

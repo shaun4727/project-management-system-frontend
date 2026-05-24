@@ -56,3 +56,29 @@ export async function saveSprintAction(prevState: any, formData: FormData) {
 		return { error: 'Network error. Could not connect to server.', success: false };
 	}
 }
+
+export async function deleteSprintAction(sprintId: string, projectId: string) {
+	const cookieStore = await cookies();
+	const token = cookieStore.get('mpms_token')?.value;
+
+	try {
+		const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/sprints/${sprintId}`, {
+			method: 'DELETE',
+			headers: {
+				...(token ? { Authorization: `Bearer ${token}` } : {}),
+			},
+		});
+
+		if (!res.ok) {
+			const data = await res.json().catch(() => ({}));
+			throw new Error(data.message || 'Failed to delete sprint');
+		}
+
+		// Instantly refresh the UI on the specific project's details page
+		revalidatePath(`/projects/${projectId}`);
+		return { success: true };
+	} catch (error: any) {
+		console.error('Delete sprint error:', error);
+		return { success: false, error: error.message || 'Failed to delete sprint.' };
+	}
+}

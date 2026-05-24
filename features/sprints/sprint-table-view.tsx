@@ -1,8 +1,9 @@
 'use client';
 
+import { deleteSprintAction } from '@/actions/sprint.actions';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, ChevronDown, ChevronRight, Circle, Pencil } from 'lucide-react';
-import React, { useState } from 'react';
+import { CheckCircle2, ChevronDown, ChevronRight, Circle, Pencil, Trash2 } from 'lucide-react';
+import React, { startTransition, useState } from 'react';
 import { SprintModal } from './sprints-modal';
 
 interface Task {
@@ -37,10 +38,19 @@ export function SprintTableView({ sprints, projectId }: SprintTableViewProps) {
 	};
 
 	const handleEditClick = (e: React.MouseEvent, sprint: Sprint) => {
-		e.stopPropagation(); // Prevent row expansion when clicking edit
+		e.stopPropagation(); // Prevent row expansion
 		setEditingSprint(sprint);
 		setModalKey((prev) => prev + 1);
 		setIsModalOpen(true);
+	};
+
+	// --- NEW: Delete Handler ---
+	const handleDeleteClick = (e: React.MouseEvent, sprintId: string) => {
+		e.stopPropagation(); // Prevent row expansion
+
+		startTransition(() => {
+			deleteSprintAction(sprintId, projectId);
+		});
 	};
 
 	const formatDate = (dateString: string) => {
@@ -57,7 +67,6 @@ export function SprintTableView({ sprints, projectId }: SprintTableViewProps) {
 		);
 	}
 
-	// Sort by sprint number
 	const sortedSprints = [...sprints].sort((a, b) => a.sprintNumber - b.sprintNumber);
 
 	return (
@@ -106,20 +115,32 @@ export function SprintTableView({ sprints, projectId }: SprintTableViewProps) {
 										</Badge>
 									</td>
 									<td className="py-4 px-4 text-right">
-										<button
-											onClick={(e) => handleEditClick(e, sprint)}
-											className="p-2 -mr-2 opacity-50 hover:opacity-100 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all cursor-pointer"
-											title="Edit Sprint"
-										>
-											<Pencil className="h-4 w-4" />
-										</button>
+										{/* Action Buttons Group */}
+										<div className="flex items-center justify-end gap-1 opacity-50 group-hover:opacity-100 transition-opacity">
+											<button
+												onClick={(e) => handleEditClick(e, sprint)}
+												className="p-1.5 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer"
+												title="Edit Sprint"
+											>
+												<Pencil className="h-4 w-4" />
+											</button>
+
+											{/* --- NEW: Delete Button --- */}
+											<button
+												onClick={(e) => handleDeleteClick(e, sprint.id)}
+												className="p-1.5 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+												title="Delete Sprint"
+											>
+												<Trash2 className="h-4 w-4" />
+											</button>
+										</div>
 									</td>
 								</tr>
 
 								{/* Expanded Tasks List */}
-								{isExpanded && (
-									<tr className="bg-slate-50/50">
-										<td colSpan={5} className="py-0 px-0">
+								{isExpanded ? (
+									<tr className="bg-slate-50/50 hover:bg-slate-50/50">
+										<td colSpan={5} className="py-0 px-0 cursor-default">
 											<div className="px-12 py-4 border-l-2 border-indigo-500 ml-4 my-2">
 												<h4 className="text-xs font-bold text-slate-900 mb-3 uppercase tracking-wider">
 													Tasks in this Sprint
@@ -156,7 +177,7 @@ export function SprintTableView({ sprints, projectId }: SprintTableViewProps) {
 											</div>
 										</td>
 									</tr>
-								)}
+								) : null}
 							</React.Fragment>
 						);
 					})}
