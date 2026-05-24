@@ -16,11 +16,18 @@ export default async function TasksPage({
 		...(token ? { Authorization: `Bearer ${token}` } : {}),
 	};
 
-	// 1. Build Query for Tasks
 	const query = new URLSearchParams();
-	Object.entries(resolvedParams).forEach(([key, value]) => {
-		if (value) query.append(key, value);
-	});
+
+	if (resolvedParams.project) query.append('projectId', resolvedParams.project);
+	if (resolvedParams.sprint) query.append('sprintId', resolvedParams.sprint);
+	if (resolvedParams.assignee) query.append('assigneeId', resolvedParams.assignee);
+
+	// Status and Priority match exactly
+	if (resolvedParams.status) query.append('status', resolvedParams.status);
+	if (resolvedParams.priority) query.append('priority', resolvedParams.priority);
+
+	// Keep pagination
+	if (resolvedParams.page) query.append('page', resolvedParams.page);
 
 	const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
