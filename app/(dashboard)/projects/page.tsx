@@ -11,7 +11,6 @@ export default async function ProjectsPage({ searchParams }: { searchParams: { p
 	try {
 		const response = await fetchProjects(currentPage, 6, statusFilter);
 		initialData = response.data;
-		console.log(initialData);
 	} catch (error) {
 		return <div className="p-8 text-red-500">Failed to load projects.</div>;
 	}
