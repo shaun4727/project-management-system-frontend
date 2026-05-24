@@ -21,28 +21,65 @@ export function TaskModal({ isOpen, onClose, task, projects = [], sprints = [], 
 	const isEditing = !!task;
 	const [state, formAction, isPending] = useActionState(saveTaskAction, null);
 
-	// Track selected project to filter the sprints dropdown
-	const [selectedProjectId, setSelectedProjectId] = useState<string>(task?.projectId || '');
+	// 1. Controlled Form State
+	const [formData, setFormData] = useState({
+		title: '',
+		projectId: '',
+		sprintId: '',
+		assigneeId: '',
+		estimateHours: '',
+		status: 'TODO',
+		priority: 'MEDIUM',
+		dueDate: '',
+		description: '',
+	});
 
+	// Handle Closing
 	useEffect(() => {
 		if (state?.success) onClose();
 	}, [state, onClose]);
 
-	// Reset local state when opening for a new/different task
+	// 2. Safely initialize data when modal opens
 	useEffect(() => {
-		if (isOpen) setSelectedProjectId(task?.projectId || '');
+		if (isOpen) {
+			// Check multiple paths depending on how the backend populates relations
+			const derivedProjectId = task?.projectId || task?.project?.id || task?.sprint?.projectId || '';
+
+			setFormData({
+				title: task?.title || '',
+				projectId: derivedProjectId,
+				sprintId: task?.sprintId || '',
+				assigneeId: task?.assignees?.[0]?.id || task?.assigneeId || '',
+				estimateHours: task?.estimateHours ? String(task.estimateHours) : '',
+				status: task?.status || 'TODO',
+				priority: task?.priority || 'MEDIUM',
+				dueDate: task?.dueDate ? task.dueDate.split('T')[0] : '',
+				description: task?.description || '',
+			});
+		}
 	}, [isOpen, task]);
 
-	const formatDate = (dateString?: string) => {
-		return dateString ? new Date(dateString).toISOString().split('T')[0] : '';
+	// 3. Handle all input changes centrally
+	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+		const { name, value } = e.target;
+		setFormData((prev) => ({ ...prev, [name]: value }));
+
+		// If Project changes, automatically clear the Sprint
+		if (name === 'projectId') {
+			setFormData((prev) => ({ ...prev, sprintId: '' }));
+		}
 	};
 
-	// Filter sprints to only show those belonging to the selected project
-	const filteredSprints = sprints.filter((sprint) => sprint.projectId === selectedProjectId);
+	// Filter sprints dynamically based on selected project
+	const filteredSprints = sprints.filter((sprint) => sprint.projectId === formData.projectId);
+
+	// 4. Validation: Check if ALL fields are populated
+	const isFormValid = Object.values(formData).every((val) =>
+		typeof val === 'string' ? val.trim() !== '' : val !== null,
+	);
 
 	return (
 		<Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-			{/* Widened the modal slightly to sm:max-w-[700px] to comfortably fit 3 columns */}
 			<DialogContent className="sm:max-w-[700px] bg-white border-slate-100 shadow-xl rounded-2xl">
 				<DialogHeader>
 					<DialogTitle className="text-xl font-bold text-slate-900">
@@ -67,7 +104,8 @@ export function TaskModal({ isOpen, onClose, task, projects = [], sprints = [], 
 						<label className="text-sm font-semibold text-slate-700">Task Title *</label>
 						<Input
 							name="title"
-							defaultValue={task?.title}
+							value={formData.title}
+							onChange={handleInputChange}
 							required
 							className="bg-slate-50"
 							placeholder="e.g. Setup Database Schema"
@@ -77,14 +115,14 @@ export function TaskModal({ isOpen, onClose, task, projects = [], sprints = [], 
 					{/* Row 2: Project & Sprint */}
 					<div className="grid grid-cols-2 gap-4">
 						<div className="space-y-1.5">
-							<label className="text-sm font-semibold text-slate-700">Project</label>
+							<label className="text-sm font-semibold text-slate-700">Project *</label>
 							<select
 								name="projectId"
-								value={selectedProjectId}
-								onChange={(e) => setSelectedProjectId(e.target.value)}
+								value={formData.projectId}
+								onChange={handleInputChange}
 								className="flex h-10 w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20"
 							>
-								<option value="">No Project</option>
+								<option value="">Select Project</option>
 								{projects.map((p) => (
 									<option key={p.id} value={p.id}>
 										{p.title}
@@ -93,15 +131,16 @@ export function TaskModal({ isOpen, onClose, task, projects = [], sprints = [], 
 							</select>
 						</div>
 						<div className="space-y-1.5">
-							<label className="text-sm font-semibold text-slate-700">Sprint</label>
+							<label className="text-sm font-semibold text-slate-700">Sprint *</label>
 							<select
 								name="sprintId"
-								defaultValue={task?.sprintId}
-								disabled={!selectedProjectId}
+								value={formData.sprintId}
+								onChange={handleInputChange}
+								disabled={!formData.projectId}
 								className="flex h-10 w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm disabled:opacity-50"
 							>
 								<option value="">
-									{selectedProjectId ? 'Backlog (No Sprint)' : 'Select a Project first'}
+									{formData.projectId ? 'Select a Sprint' : 'Select a Project first'}
 								</option>
 								{filteredSprints.map((s) => (
 									<option key={s.id} value={s.id}>
@@ -115,10 +154,11 @@ export function TaskModal({ isOpen, onClose, task, projects = [], sprints = [], 
 					{/* Row 3: Assignee, Estimate Hours, Status */}
 					<div className="grid grid-cols-3 gap-4">
 						<div className="space-y-1.5">
-							<label className="text-sm font-semibold text-slate-700">Assignee</label>
+							<label className="text-sm font-semibold text-slate-700">Assignee *</label>
 							<select
 								name="assigneeId"
-								defaultValue={task?.assignees?.[0]?.id || task?.assigneeId || ''}
+								value={formData.assigneeId}
+								onChange={handleInputChange}
 								className="flex h-10 w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20"
 							>
 								<option value="">Unassigned</option>
@@ -130,22 +170,24 @@ export function TaskModal({ isOpen, onClose, task, projects = [], sprints = [], 
 							</select>
 						</div>
 						<div className="space-y-1.5">
-							<label className="text-sm font-semibold text-slate-700">Est. Hours</label>
+							<label className="text-sm font-semibold text-slate-700">Est. Hours *</label>
 							<Input
 								name="estimateHours"
 								type="number"
 								step="0.5"
 								min="0"
 								placeholder="e.g. 4.5"
-								defaultValue={task?.estimateHours}
+								value={formData.estimateHours}
+								onChange={handleInputChange}
 								className="bg-slate-50"
 							/>
 						</div>
 						<div className="space-y-1.5">
-							<label className="text-sm font-semibold text-slate-700">Status</label>
+							<label className="text-sm font-semibold text-slate-700">Status *</label>
 							<select
 								name="status"
-								defaultValue={task?.status || 'TODO'}
+								value={formData.status}
+								onChange={handleInputChange}
 								className="flex h-10 w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm"
 							>
 								<option value="TODO">To Do</option>
@@ -156,13 +198,14 @@ export function TaskModal({ isOpen, onClose, task, projects = [], sprints = [], 
 						</div>
 					</div>
 
-					{/* Row 4: Priority, Start Date, Due Date */}
-					<div className="grid grid-cols-3 gap-4">
+					{/* Row 4: Priority, Due Date */}
+					<div className="grid grid-cols-2 gap-4">
 						<div className="space-y-1.5">
-							<label className="text-sm font-semibold text-slate-700">Priority</label>
+							<label className="text-sm font-semibold text-slate-700">Priority *</label>
 							<select
 								name="priority"
-								defaultValue={task?.priority || 'MEDIUM'}
+								value={formData.priority}
+								onChange={handleInputChange}
 								className="flex h-10 w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm"
 							>
 								<option value="LOW">Low</option>
@@ -172,11 +215,12 @@ export function TaskModal({ isOpen, onClose, task, projects = [], sprints = [], 
 						</div>
 
 						<div className="space-y-1.5">
-							<label className="text-sm font-semibold text-slate-700">Due Date</label>
+							<label className="text-sm font-semibold text-slate-700">Due Date *</label>
 							<Input
 								name="dueDate"
 								type="date"
-								defaultValue={formatDate(task?.dueDate)}
+								value={formData.dueDate}
+								onChange={handleInputChange}
 								className="bg-slate-50"
 							/>
 						</div>
@@ -184,28 +228,36 @@ export function TaskModal({ isOpen, onClose, task, projects = [], sprints = [], 
 
 					{/* Row 5: Description */}
 					<div className="space-y-1.5">
-						<label className="text-sm font-semibold text-slate-700">Description</label>
+						<label className="text-sm font-semibold text-slate-700">Description *</label>
 						<Textarea
 							name="description"
-							defaultValue={task?.description}
+							value={formData.description}
+							onChange={handleInputChange}
 							placeholder="Add any extra details, links, or notes..."
 							className="bg-slate-50 resize-none h-20"
 						/>
 					</div>
 
 					{/* Actions */}
-					<div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-						<Button type="button" variant="ghost" onClick={onClose} className="text-slate-500">
-							Cancel
-						</Button>
-						<Button
-							type="submit"
-							disabled={isPending}
-							className="bg-indigo-600 hover:bg-indigo-700 text-white min-w-[120px]"
-						>
-							{isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-							{isPending ? 'Saving...' : isEditing ? 'Save Changes' : 'Create Task'}
-						</Button>
+					<div className="flex items-center justify-between pt-4 border-t border-slate-100">
+						<p className="text-xs text-slate-500">
+							{!isFormValid && '* Please fill out all fields to continue.'}
+						</p>
+						<div className="flex items-center gap-3">
+							<Button type="button" variant="ghost" onClick={onClose} className="text-slate-500">
+								Cancel
+							</Button>
+
+							{/* DISABLED STATE LOGIC APPLIED HERE */}
+							<Button
+								type="submit"
+								disabled={isPending || !isFormValid}
+								className="bg-indigo-600 hover:bg-indigo-700 text-white min-w-[120px] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+							>
+								{isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+								{isPending ? 'Saving...' : isEditing ? 'Save Changes' : 'Create Task'}
+							</Button>
+						</div>
 					</div>
 				</form>
 			</DialogContent>
