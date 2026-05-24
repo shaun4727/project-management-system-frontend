@@ -42,7 +42,6 @@ export function TaskModal({ isOpen, onClose, task, projects = [], sprints = [], 
 	// 2. Safely initialize data when modal opens
 	useEffect(() => {
 		if (isOpen) {
-			// Check multiple paths depending on how the backend populates relations
 			const derivedProjectId = task?.projectId || task?.project?.id || task?.sprint?.projectId || '';
 
 			setFormData({
@@ -70,13 +69,26 @@ export function TaskModal({ isOpen, onClose, task, projects = [], sprints = [], 
 		}
 	};
 
-	// Filter sprints dynamically based on selected project
+	// Derived values for the Edit Mode read-only fields
+	const currentProjectName = projects.find((p) => p.id === formData.projectId)?.title || 'No Project';
+	const currentSprintName = sprints.find((s) => s.id === formData.sprintId)?.title || 'Backlog (No Sprint)';
 	const filteredSprints = sprints.filter((sprint) => sprint.projectId === formData.projectId);
 
-	// 4. Validation: Check if ALL fields are populated
-	const isFormValid = Object.values(formData).every((val) =>
-		typeof val === 'string' ? val.trim() !== '' : val !== null,
-	);
+	// 4. Validation: Check explicitly required fields (Sprint is optional)
+	const requiredFields = [
+		'title',
+		'projectId',
+		'assigneeId',
+		'estimateHours',
+		'status',
+		'priority',
+		'dueDate',
+		'description',
+	];
+	const isFormValid = requiredFields.every((key) => {
+		const val = (formData as any)[key];
+		return typeof val === 'string' ? val.trim() !== '' : val !== null && val !== undefined;
+	});
 
 	return (
 		<Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -112,44 +124,69 @@ export function TaskModal({ isOpen, onClose, task, projects = [], sprints = [], 
 						/>
 					</div>
 
-					{/* Row 2: Project & Sprint */}
-					<div className="grid grid-cols-2 gap-4">
-						<div className="space-y-1.5">
-							<label className="text-sm font-semibold text-slate-700">Project *</label>
-							<select
-								name="projectId"
-								value={formData.projectId}
-								onChange={handleInputChange}
-								className="flex h-10 w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20"
-							>
-								<option value="">Select Project</option>
-								{projects.map((p) => (
-									<option key={p.id} value={p.id}>
-										{p.title}
-									</option>
-								))}
-							</select>
+					{/* Row 2: Project & Sprint (CONDITIONAL RENDER) */}
+					{isEditing ? (
+						<div className="grid grid-cols-2 gap-4">
+							<div className="space-y-1.5">
+								<label className="text-sm font-semibold text-slate-700">Project</label>
+								{/* Disabled Input for display */}
+								<Input
+									disabled
+									value={currentProjectName}
+									className="bg-slate-100 text-slate-500 cursor-not-allowed"
+								/>
+								{/* Hidden Input so formData still sends the ID to the server */}
+								<input type="hidden" name="projectId" value={formData.projectId} />
+							</div>
+							<div className="space-y-1.5">
+								<label className="text-sm font-semibold text-slate-700">Sprint</label>
+								<Input
+									disabled
+									value={currentSprintName}
+									className="bg-slate-100 text-slate-500 cursor-not-allowed"
+								/>
+								<input type="hidden" name="sprintId" value={formData.sprintId} />
+							</div>
 						</div>
-						<div className="space-y-1.5">
-							<label className="text-sm font-semibold text-slate-700">Sprint *</label>
-							<select
-								name="sprintId"
-								value={formData.sprintId}
-								onChange={handleInputChange}
-								disabled={!formData.projectId}
-								className="flex h-10 w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm disabled:opacity-50"
-							>
-								<option value="">
-									{formData.projectId ? 'Select a Sprint' : 'Select a Project first'}
-								</option>
-								{filteredSprints.map((s) => (
-									<option key={s.id} value={s.id}>
-										Sprint {s.sprintNumber}: {s.title}
+					) : (
+						<div className="grid grid-cols-2 gap-4">
+							<div className="space-y-1.5">
+								<label className="text-sm font-semibold text-slate-700">Project *</label>
+								<select
+									name="projectId"
+									value={formData.projectId}
+									onChange={handleInputChange}
+									className="flex h-10 w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500/20"
+								>
+									<option value="">Select Project</option>
+									{projects.map((p) => (
+										<option key={p.id} value={p.id}>
+											{p.title}
+										</option>
+									))}
+								</select>
+							</div>
+							<div className="space-y-1.5">
+								<label className="text-sm font-semibold text-slate-700">Sprint</label>
+								<select
+									name="sprintId"
+									value={formData.sprintId}
+									onChange={handleInputChange}
+									disabled={!formData.projectId}
+									className="flex h-10 w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm disabled:opacity-50"
+								>
+									<option value="">
+										{formData.projectId ? 'Backlog (No Sprint)' : 'Select a Project first'}
 									</option>
-								))}
-							</select>
+									{filteredSprints.map((s) => (
+										<option key={s.id} value={s.id}>
+											Sprint {s.sprintNumber}: {s.title}
+										</option>
+									))}
+								</select>
+							</div>
 						</div>
-					</div>
+					)}
 
 					{/* Row 3: Assignee, Estimate Hours, Status */}
 					<div className="grid grid-cols-3 gap-4">
@@ -241,14 +278,12 @@ export function TaskModal({ isOpen, onClose, task, projects = [], sprints = [], 
 					{/* Actions */}
 					<div className="flex items-center justify-between pt-4 border-t border-slate-100">
 						<p className="text-xs text-slate-500">
-							{!isFormValid && '* Please fill out all fields to continue.'}
+							{!isFormValid && '* Please fill out all required fields to continue.'}
 						</p>
 						<div className="flex items-center gap-3">
 							<Button type="button" variant="ghost" onClick={onClose} className="text-slate-500">
 								Cancel
 							</Button>
-
-							{/* DISABLED STATE LOGIC APPLIED HERE */}
 							<Button
 								type="submit"
 								disabled={isPending || !isFormValid}
