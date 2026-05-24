@@ -9,7 +9,8 @@ import { ExportCsvButton } from '@/features/projects/components/export-csv-butto
 import { ProjectSummary } from '@/features/projects/components/project-summary';
 import { SprintList } from '@/features/projects/components/sprint-list';
 import { TaskStatusChart } from '@/features/projects/components/task-status-chart';
-import { AlertCircle, ArrowLeft, GitCompareArrows, Plus } from 'lucide-react';
+import { NewSprintButton } from '@/features/sprints/new-sprint-button';
+import { AlertCircle, ArrowLeft, GitCompareArrows } from 'lucide-react';
 import Link from 'next/link';
 
 // Next.js 15 requires params to be awaited
@@ -84,9 +85,7 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
 							<GitCompareArrows className="h-4 w-4" />
 						</Button>
 						<ExportCsvButton projectId={projectId} />
-						<Button className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm gap-2">
-							<Plus className="h-4 w-4" /> New Sprint
-						</Button>
+						<NewSprintButton projectId={projectId} />
 					</div>
 				</div>
 			</div>
