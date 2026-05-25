@@ -1,17 +1,16 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { Activity, Calendar, CheckSquare, FolderKanban, LayoutDashboard } from 'lucide-react';
+import { Activity, CheckSquare, FolderKanban, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const MAIN_NAV = [
-	{ name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+	{ name: 'Dashboard', href: '/', icon: LayoutDashboard },
 	{ name: 'Projects', href: '/projects', icon: FolderKanban },
-	{ name: 'Sprints', href: '/sprints', icon: Activity },
 	{ name: 'Tasks', href: '/tasks', icon: CheckSquare },
-	{ name: 'Calendar', href: '/calendar', icon: Calendar },
-	{ name: 'Activity', href: '/activity', icon: Activity },
+	{ name: 'Team', href: '/team', icon: Activity },
+	{ name: 'Task Board', href: '/tasks/board', icon: FolderKanban },
 ];
 
 export function Sidebar() {
@@ -45,17 +44,6 @@ export function Sidebar() {
 						</Link>
 					);
 				})}
-			</div>
-
-			{/* User Profile Area */}
-			<div className="p-4 border-t border-slate-100 mt-auto">
-				<div className="flex items-center gap-3">
-					<img src="/avatar.jpg" alt="User" className="h-9 w-9 rounded-full object-cover" />
-					<div className="flex flex-col">
-						<span className="text-sm font-semibold text-slate-900">Alex Johnson</span>
-						<span className="text-xs text-slate-500">Manager</span>
-					</div>
-				</div>
 			</div>
 		</aside>
 	);

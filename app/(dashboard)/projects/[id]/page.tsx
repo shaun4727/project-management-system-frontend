@@ -99,7 +99,7 @@ export default async function ProjectDetailsPage({
 
 			{/* URL-Driven Tabs Menu */}
 			<nav className="gsap-item flex overflow-x-auto border-b border-slate-200 hide-scrollbar gap-6">
-				{['Overview', 'Sprints', 'Tasks', 'Activity', 'Files', 'Settings'].map((tab) => {
+				{['Overview', 'Sprints'].map((tab) => {
 					const isActive = activeTab === tab;
 					return (
 						<Link

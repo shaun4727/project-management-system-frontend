@@ -1,8 +1,9 @@
 'use client';
 
-import { Bell, Menu, Search } from 'lucide-react';
+import { Bell, Menu } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { UserProfileDropdown } from '../shared/navbar/user-profile-dropdown';
 import { Sidebar } from '../shared/sidebar/Sidebar';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -29,23 +30,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 						<button className="md:hidden p-2 -ml-2 text-slate-500 hover:text-slate-700 rounded-lg hover:bg-slate-50">
 							<Menu className="h-5 w-5" />
 						</button>
-						<div className="hidden sm:flex relative w-64 md:w-80">
-							<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-							<input
-								type="text"
-								placeholder="Search projects, tasks..."
-								className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm"
-							/>
-						</div>
 					</div>
 					<div className="flex items-center gap-3 sm:gap-4">
 						<button className="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-50 transition-colors">
 							<Bell className="h-5 w-5" />
 						</button>
 
-						<div className="h-8 w-8 rounded-full bg-indigo-100 border border-indigo-200 flex items-center justify-center text-indigo-700 font-bold text-xs ml-2 shadow-sm cursor-pointer">
-							AD
-						</div>
+						<UserProfileDropdown />
 					</div>
 				</header>
 
