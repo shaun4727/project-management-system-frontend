@@ -16,6 +16,18 @@ const MAIN_NAV = [
 export function Sidebar() {
 	const pathname = usePathname();
 
+	// 1. Find all routes that match the current pathname
+	const matchingItems = MAIN_NAV.filter((item) => {
+		if (item.href === '/') {
+			return pathname === '/'; // Exact match for home
+		}
+		// Match exact route OR sub-routes (e.g., /projects/123)
+		return pathname === item.href || pathname.startsWith(`${item.href}/`);
+	});
+
+	// 2. Find the most specific match by sorting by length (longest wins)
+	const activeItem = matchingItems.sort((a, b) => b.href.length - a.href.length)[0];
+
 	return (
 		<aside className="hidden md:flex w-64 flex-col border-r border-slate-200 bg-white">
 			<div className="flex h-16 items-center px-6 border-b border-slate-100">
@@ -27,7 +39,9 @@ export function Sidebar() {
 
 			<div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
 				{MAIN_NAV.map((item) => {
-					const isActive = pathname.startsWith(item.href);
+					// 3. Compare the current item against our "winning" active item
+					const isActive = activeItem?.href === item.href;
+
 					return (
 						<Link
 							key={item.name}
