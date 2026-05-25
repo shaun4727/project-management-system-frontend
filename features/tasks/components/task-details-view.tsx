@@ -1,11 +1,11 @@
 'use client';
 
+import { fetchCommentAction } from '@/actions/comment.action';
 import gsap from 'gsap';
-import { useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { CommentsSectionNew } from '../new-component/comment-section';
 import { TaskDetailsData } from '../types/task.types';
-import { CommentsSection } from './comments-section';
 import { LogTimeForm } from './log-time-form';
-import { SubtaskList } from './subtask-list';
 import { TaskHeader } from './task-header';
 import { TimeLogHistory } from './time-log-history';
 
@@ -16,6 +16,31 @@ interface TaskDetailsViewProps {
 // CLIENT COMPONENT WRAPPER (Handles GSAP and Responsive Grid)
 export function TaskDetailsView({ task }: TaskDetailsViewProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
+	const [comments, setComments] = useState<any[]>([]);
+	const [isLoadingComments, setIsLoadingComments] = useState(true);
+
+	useEffect(() => {
+		const fetchComments = async () => {
+			try {
+				const res = await fetchCommentAction(task.id);
+
+				if (res.success) {
+					// Update state with the API response
+					setComments(res.data.data);
+				} else {
+					console.error('Failed to fetch comments:', res.message);
+				}
+			} catch (error) {
+				console.error('Network error while fetching comments:', error);
+			} finally {
+				setIsLoadingComments(false);
+			}
+		};
+
+		if (task?.id) {
+			fetchComments();
+		}
+	}, [task?.id]);
 
 	// GSAP Stagger animation for the panels
 	useLayoutEffect(() => {
@@ -45,22 +70,17 @@ export function TaskDetailsView({ task }: TaskDetailsViewProps) {
 							<h3 className="text-sm font-bold text-slate-900 mb-2">Description</h3>
 							<p className="text-sm text-slate-600 leading-relaxed">{task.description}</p>
 						</div>
-
-						<div>
-							<h3 className="text-sm font-bold text-slate-900 mb-2">Subtasks</h3>
-							<SubtaskList initialSubtasks={task.subtasks} />
-						</div>
 					</div>
 				</div>
 
 				{/* Column 2: Comments (Middle) */}
 				<div className="lg:col-span-4 border-t lg:border-t-0 lg:border-l lg:border-r border-slate-100 p-6 lg:p-8 lg:overflow-y-auto bg-white stagger-panel flex flex-col min-h-[400px]">
-					<CommentsSection initialComments={task.comments} />
+					<CommentsSectionNew taskId={task.id} comments={comments} />
 				</div>
 
 				{/* Column 3: Time Logging (Right) */}
 				<div className="lg:col-span-3 p-6 lg:overflow-y-auto custom-scrollbar stagger-panel bg-white">
-					<LogTimeForm />
+					<LogTimeForm taskId={task.id} />
 					<TimeLogHistory logs={task.timeLogs} />
 				</div>
 			</div>

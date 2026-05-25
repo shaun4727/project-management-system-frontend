@@ -16,7 +16,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { gsap } from 'gsap';
-import { Check, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { Check, Eye, Pencil, Plus, Trash2, X } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { startTransition, useEffect, useRef, useState } from 'react';
 import { TaskModal } from './task-modal';
@@ -320,6 +321,14 @@ export function TaskDashboard({ tasks = [], projects = [], sprints = [], users =
 											{/* Actions with Faded Icons */}
 											<td className="py-3 px-4 text-right">
 												<div className="flex items-center justify-end gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
+													<Link href={`/tasks/${task.id}`}>
+														<button
+															className="p-2 hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-lg transition-colors cursor-pointer"
+															title="View Full Details"
+														>
+															<Eye className="h-4 w-4" />
+														</button>
+													</Link>
 													<button
 														onClick={() => handleOpenModal(task)}
 														className="p-2 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg transition-colors cursor-pointer"
