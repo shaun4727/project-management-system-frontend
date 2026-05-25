@@ -35,3 +35,30 @@ export async function createUserAction(prevState: any, formData: FormData) {
 		return { error: 'Network error.', success: false };
 	}
 }
+
+export async function getUsersAction() {
+	const cookieStore = await cookies();
+	const token = cookieStore.get('mpms_token')?.value;
+
+	try {
+		const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/users`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				...(token ? { Authorization: `Bearer ${token}` } : {}),
+			},
+			// Revalidate this fetch request when a new user is created
+			next: { tags: ['users'] },
+		});
+
+		const data = await res.json();
+
+		if (!res.ok) {
+			return { success: false, error: data.message || 'Failed to fetch users' };
+		}
+
+		return { success: true, data: data.data };
+	} catch (error) {
+		return { success: false, error: 'Network error while fetching users.' };
+	}
+}
