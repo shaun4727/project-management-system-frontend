@@ -1,6 +1,7 @@
 'use client';
 
 import { deleteTaskAction, patchTaskAction } from '@/actions/task.actions';
+import { RoleGuard } from '@/components/shared/role-guard';
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -15,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useAuth } from '@/providers/auth-provider';
 import { gsap } from 'gsap';
 import { Check, Eye, Pencil, Plus, Trash2, X } from 'lucide-react';
 import Link from 'next/link';
@@ -26,6 +28,7 @@ export function TaskDashboard({ tasks = [], projects = [], sprints = [], users =
 	const containerRef = useRef<HTMLDivElement>(null);
 	const router = useRouter();
 	const searchParams = useSearchParams();
+	const { user } = useAuth();
 
 	// Modal State
 	const [isModalOpen, setIsModalOpen] = useState(false);
@@ -123,12 +126,14 @@ export function TaskDashboard({ tasks = [], projects = [], sprints = [], users =
 					<h1 className="text-2xl font-bold text-slate-900">Tasks</h1>
 					<p className="text-sm text-slate-500">Plan, track, and manage all tasks in one place.</p>
 				</div>
-				<Button
-					onClick={() => handleOpenModal()}
-					className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
-				>
-					<Plus className="h-4 w-4 mr-2" /> New Task
-				</Button>
+				<RoleGuard allowedRoles={['ADMIN', 'MANAGER']}>
+					<Button
+						onClick={() => handleOpenModal()}
+						className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
+					>
+						<Plus className="h-4 w-4 mr-2" /> New Task
+					</Button>
+				</RoleGuard>
 			</div>
 
 			{/* Filters Row */}
@@ -271,6 +276,8 @@ export function TaskDashboard({ tasks = [], projects = [], sprints = [], users =
 												<Select
 													value={task.status}
 													onValueChange={(val) => handleStatusQuickChange(task.id, val)}
+													// 3. Disable the entire dropdown if it's already DONE and they aren't an ADMIN
+													disabled={task.status === 'DONE' && user?.role !== 'ADMIN'}
 												>
 													<SelectTrigger
 														className={`h-8 text-xs font-semibold shadow-none border-0 w-[130px] transition-colors ${
@@ -289,7 +296,17 @@ export function TaskDashboard({ tasks = [], projects = [], sprints = [], users =
 														<SelectItem value="TODO">To Do</SelectItem>
 														<SelectItem value="IN_PROGRESS">In Progress</SelectItem>
 														<SelectItem value="REVIEW_REQUIRED">Review</SelectItem>
-														<SelectItem value="DONE">Done</SelectItem>
+
+														{/* 4. Logic for the DONE option */}
+														{(user?.role === 'ADMIN' || task.status === 'DONE') && (
+															<SelectItem
+																value="DONE"
+																// Only disable the specific option if they aren't an admin
+																disabled={user?.role !== 'ADMIN'}
+															>
+																Done
+															</SelectItem>
+														)}
 													</SelectContent>
 												</Select>
 											</td>

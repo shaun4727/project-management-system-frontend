@@ -1,5 +1,6 @@
 import { fetchProjectDetails } from '@/actions/project/project-detail.action';
 import { AnimatedContainer } from '@/components/shared/animatedContainer';
+import { RoleGuard } from '@/components/shared/role-guard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -11,7 +12,7 @@ import { SprintList } from '@/features/projects/components/sprint-list';
 import { TaskStatusChart } from '@/features/projects/components/task-status-chart';
 import { NewSprintButton } from '@/features/sprints/new-sprint-button';
 import { SprintTableView } from '@/features/sprints/sprint-table-view';
-import { AlertCircle, ArrowLeft, GitCompareArrows } from 'lucide-react';
+import { AlertCircle, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 // Next.js 16/15 requires both params and searchParams to be awaited
@@ -84,15 +85,10 @@ export default async function ProjectDetailsPage({
 					</div>
 
 					<div className="flex items-center gap-3">
-						<Button
-							variant="outline"
-							size="icon"
-							className="border-slate-200 text-slate-500 hidden sm:flex"
-						>
-							<GitCompareArrows className="h-4 w-4" />
-						</Button>
 						<ExportCsvButton projectId={projectId} />
-						<NewSprintButton projectId={projectId} />
+						<RoleGuard allowedRoles={['ADMIN', 'MANAGER']}>
+							<NewSprintButton projectId={projectId} />
+						</RoleGuard>
 					</div>
 				</div>
 			</div>

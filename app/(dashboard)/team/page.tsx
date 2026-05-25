@@ -1,6 +1,7 @@
 import { getCurrentUserAction } from '@/actions/auth.actions';
 import { getUsersAction } from '@/actions/user.action';
 import { AnimatedContainer } from '@/components/shared/animatedContainer';
+import { RoleGuard } from '@/components/shared/role-guard';
 import { CreateUserForm } from '@/features/users/components/create-user-form';
 import { UserList } from '@/features/users/components/users-list';
 
@@ -24,7 +25,9 @@ export default async function TeamPage() {
 			<div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 				{/* Left Side: Creation Form (Takes up 5 columns on large screens) */}
 				<div className="lg:col-span-5">
-					<CreateUserForm />
+					<RoleGuard allowedRoles={['ADMIN']}>
+						<CreateUserForm />
+					</RoleGuard>
 
 					{/* Kept the Permissions guide for reference */}
 					<div className="mt-6 bg-slate-50 rounded-2xl p-6 border border-slate-200">

@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/providers/auth-provider';
 import { Activity, CheckSquare, FolderKanban, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -15,17 +16,21 @@ const MAIN_NAV = [
 
 export function Sidebar() {
 	const pathname = usePathname();
+	const { user } = useAuth();
 
-	// 1. Find all routes that match the current pathname
-	const matchingItems = MAIN_NAV.filter((item) => {
+	const filteredNav = MAIN_NAV.filter((item) => {
+		// Only Admins (and maybe Managers) can see the Team tab
+		if (item.name === 'Team' && user?.role !== 'ADMIN') return false;
+		return true;
+	});
+
+	const matchingItems = filteredNav.filter((item) => {
 		if (item.href === '/') {
 			return pathname === '/'; // Exact match for home
 		}
 		// Match exact route OR sub-routes (e.g., /projects/123)
 		return pathname === item.href || pathname.startsWith(`${item.href}/`);
 	});
-
-	// 2. Find the most specific match by sorting by length (longest wins)
 	const activeItem = matchingItems.sort((a, b) => b.href.length - a.href.length)[0];
 
 	return (
@@ -38,7 +43,7 @@ export function Sidebar() {
 			</div>
 
 			<div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-				{MAIN_NAV.map((item) => {
+				{filteredNav.map((item) => {
 					// 3. Compare the current item against our "winning" active item
 					const isActive = activeItem?.href === item.href;
 

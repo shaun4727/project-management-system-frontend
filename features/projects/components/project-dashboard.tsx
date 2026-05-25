@@ -2,6 +2,7 @@
 
 import { deleteProjectAction } from '@/actions/project/project.action';
 import { Pagination } from '@/components/shared/pagination';
+import { RoleGuard } from '@/components/shared/role-guard';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { gsap } from 'gsap';
@@ -179,12 +180,15 @@ export default function ProjectDashboard({ initialProjects, paginationMeta }: Pr
 						</SelectContent>
 					</Select>
 
-					<Button
-						onClick={handleOpenCreate}
-						className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm h-9 gap-2"
-					>
-						<Plus className="h-4 w-4" /> New Project
-					</Button>
+					<RoleGuard allowedRoles={['ADMIN', 'MANAGER']}>
+						{' '}
+						<Button
+							onClick={handleOpenCreate}
+							className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm h-9 gap-2"
+						>
+							<Plus className="h-4 w-4" /> New Project
+						</Button>
+					</RoleGuard>
 				</div>
 			</div>
 

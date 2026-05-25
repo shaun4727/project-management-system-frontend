@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
+import { getCurrentUserAction } from './auth.actions';
 
 const formatStrictDate = (dateRaw: string | undefined | null) => {
 	if (!dateRaw) return undefined;
@@ -67,9 +68,22 @@ export async function saveTaskAction(prevState: any, formData: FormData) {
 	}
 }
 
-export async function patchTaskAction(taskId: string, updates: any) {
+export async function patchTaskAction(taskId: string, updateData: any) {
 	const cookieStore = await cookies();
 	const token = cookieStore.get('mpms_token')?.value;
+
+	// SECURITY CHECK: If someone is trying to set the status to DONE
+	if (updateData.status === 'DONE') {
+		const authRes = await getCurrentUserAction();
+		const currentUser = authRes.success ? authRes.data : null;
+
+		if (!currentUser || currentUser.role !== 'ADMIN') {
+			return {
+				success: false,
+				error: 'Unauthorized: Only Admins can mark tasks as Done.',
+			};
+		}
+	}
 
 	try {
 		const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/tasks/${taskId}`, {
@@ -78,15 +92,16 @@ export async function patchTaskAction(taskId: string, updates: any) {
 				'Content-Type': 'application/json',
 				...(token ? { Authorization: `Bearer ${token}` } : {}),
 			},
-			body: JSON.stringify(updates),
+			body: JSON.stringify(updateData),
 		});
 
-		if (!res.ok) throw new Error('Failed to update task');
-		revalidatePath('/tasks');
-		return { success: true };
+		if (res.ok) {
+			revalidatePath('/tasks');
+			return { success: true };
+		}
+		return { success: false, error: 'Failed to update task' };
 	} catch (error) {
-		console.error('Patch error:', error);
-		return { success: false, error: 'Update failed.' };
+		return { success: false, error: 'Network error' };
 	}
 }
 
