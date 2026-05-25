@@ -21,9 +21,11 @@ export function TaskHeader({ task }: TaskHeaderProps) {
 						{task.status}
 					</Badge>
 				</div>
+
+				{/* FIX 1: Extract string properties from the sprint object safely */}
 				<div className="flex items-center gap-2 text-sm text-slate-500 font-medium">
 					<Layout className="h-4 w-4" />
-					<span>{task.sprint}</span>
+					<span>{task.sprint ? `Sprint ${task.sprint.sprintNumber}: ${task.sprint.title}` : 'Backlog'}</span>
 				</div>
 			</div>
 
@@ -31,14 +33,19 @@ export function TaskHeader({ task }: TaskHeaderProps) {
 				<div className="flex items-center gap-3">
 					<span className="text-sm font-medium text-slate-500">Assigned to</span>
 					<div className="flex -space-x-2">
-						{task.assignees.slice(0, 2).map((assignee) => (
-							<Avatar key={assignee.id} className="h-8 w-8 border-2 border-white shadow-sm">
-								{assignee.avatarUrl && <AvatarImage src={assignee.avatarUrl} />}
-								<AvatarFallback className="bg-indigo-100 text-indigo-700 text-xs font-bold">
-									{assignee.initials || assignee.name?.substring(0, 2).toUpperCase()}
-								</AvatarFallback>
-							</Avatar>
-						))}
+						{/* FIX 2: Safely check if assignees exist and have length before mapping */}
+						{task.assignees?.length > 0 ? (
+							task.assignees.slice(0, 2).map((assignee) => (
+								<Avatar key={assignee.id} className="h-8 w-8 border-2 border-white shadow-sm">
+									{assignee.avatarUrl && <AvatarImage src={assignee.avatarUrl} />}
+									<AvatarFallback className="bg-indigo-100 text-indigo-700 text-xs font-bold">
+										{assignee.initials || assignee.name?.substring(0, 2).toUpperCase()}
+									</AvatarFallback>
+								</Avatar>
+							))
+						) : (
+							<span className="text-sm text-slate-400 italic ml-2">Unassigned</span>
+						)}
 					</div>
 				</div>
 

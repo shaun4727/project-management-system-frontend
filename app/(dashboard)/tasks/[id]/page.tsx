@@ -33,9 +33,15 @@ export default async function SingleTaskPage({
 			description: task.description || 'No description provided.',
 			status: task.status,
 			priority: task.priority,
-			sprint: task.sprint?.title || 'Backlog',
+
+			// 1. FIX: Pass the entire sprint object (or null) so TaskHeader can read sprintNumber and title safely
+			sprint: task.sprint || null,
+
 			estimatedHours: task.estimateHours || 0,
-			loggedHours: 0, // Calculate this if you have time logs in DB
+
+			// 2. FIX: Safely calculate logged hours if timeLogs exist in the payload
+			loggedHours: task.timeLogs?.reduce((total: number, log: any) => total + (log.hours || 0), 0) || 0,
+
 			assignees:
 				task.assignees?.map((a: any) => ({
 					id: a.id,
@@ -46,9 +52,13 @@ export default async function SingleTaskPage({
 						.join('')
 						.toUpperCase(),
 				})) || [],
+
+			// 3. FIX: Pass the attachments array we just added to the backend!
+			attachments: task.attachments || [],
+
 			subtasks: [], // Map real subtasks if your DB has them
-			comments: [], // Map real comments if your DB has them
-			timeLogs: [], // Map real time logs if your DB has them
+			comments: [], // Comments are fetched client-side in TaskDetailsView
+			timeLogs: [], // Time logs are fetched client-side in TaskDetailsView
 		};
 
 		return (

@@ -35,13 +35,28 @@ export interface TaskDetailsData {
 	id: string;
 	title: string;
 	status: string;
-	sprint: string;
+
+	// FIX: Sprint is now an object, or null if it's in the backlog
+	sprint: {
+		id?: string;
+		title: string;
+		sprintNumber: number;
+	} | null;
+
 	assignees: Assignee[];
-	priority: 'High' | 'Medium' | 'Low';
+	priority: 'HIGH' | 'MEDIUM' | 'LOW'; // Ensure these match your Prisma enums
 	estimatedHours: number;
 	loggedHours: number;
 	description: string;
 	subtasks: Subtask[];
 	comments: Comment[];
 	timeLogs: TimeLog[];
+
+	// FIX: Also updated attachments from an empty array `[]` to an array of objects
+	attachments: {
+		id: string;
+		fileName: string;
+		fileUrl: string;
+		createdAt: string;
+	}[];
 }

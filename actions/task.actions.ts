@@ -147,3 +147,69 @@ export async function patchTaskStatusAction(taskId: string, status: string) {
 		return { success: false, error: 'Network error' };
 	}
 }
+
+export async function uploadAttachmentAction(taskId: string, prevState: any, formData: FormData) {
+	const file = formData.get('file') as File;
+
+	// Basic validation
+	if (!file || file.size === 0) {
+		return { success: false, error: 'Please select a valid file to upload.' };
+	}
+
+	// Explicitly append the taskId to the FormData payload for the backend
+	formData.append('taskId', taskId);
+
+	const cookieStore = await cookies();
+	const token = cookieStore.get('mpms_token')?.value;
+
+	try {
+		// Pointing to the new unified attachments endpoint
+		const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/attachments`, {
+			method: 'POST',
+			headers: {
+				// Do NOT set 'Content-Type'. Fetch automatically handles multipart/form-data boundaries
+				...(token ? { Authorization: `Bearer ${token}` } : {}),
+			},
+			body: formData, // Now contains both 'file' and 'taskId'
+		});
+
+		const data = await res.json().catch(() => ({}));
+
+		if (!res.ok) {
+			return { success: false, error: data.message || 'Failed to upload file.' };
+		}
+
+		return { success: true, message: 'File uploaded!', clearForm: Math.random() };
+	} catch (error) {
+		console.error('Upload error:', error);
+		return { success: false, error: 'Network error occurred during upload.' };
+	}
+}
+
+export async function fetchTaskDetailsAction(taskId: string) {
+	const cookieStore = await cookies();
+	const token = cookieStore.get('mpms_token')?.value;
+
+	try {
+		const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/tasks/${taskId}`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				...(token ? { Authorization: `Bearer ${token}` } : {}),
+			},
+			// Cache control depending on your Next.js setup (optional)
+			cache: 'no-store',
+		});
+
+		const data = await res.json();
+
+		if (!res.ok) {
+			return { success: false, error: data.message || 'Failed to fetch task details' };
+		}
+
+		return { success: true, data: data.data };
+	} catch (error) {
+		console.error('Error fetching task details:', error);
+		return { success: false, error: 'Network error.' };
+	}
+}
