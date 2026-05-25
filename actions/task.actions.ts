@@ -107,3 +107,27 @@ export async function deleteTaskAction(taskId: string) {
 		return { success: false, error: 'Failed to delete task.' };
 	}
 }
+
+export async function patchTaskStatusAction(taskId: string, status: string) {
+	const cookieStore = await cookies();
+	const token = cookieStore.get('mpms_token')?.value;
+
+	try {
+		const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/tasks/${taskId}`, {
+			method: 'PATCH',
+			headers: {
+				'Content-Type': 'application/json',
+				...(token ? { Authorization: `Bearer ${token}` } : {}),
+			},
+			body: JSON.stringify({ status }),
+		});
+
+		if (res.ok) {
+			revalidatePath('/tasks/board'); // Refresh the board in the background
+			return { success: true };
+		}
+		return { success: false, error: 'Failed to update task' };
+	} catch (error) {
+		return { success: false, error: 'Network error' };
+	}
+}

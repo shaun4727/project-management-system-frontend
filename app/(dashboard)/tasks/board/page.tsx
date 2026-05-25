@@ -1,5 +1,5 @@
 import { AnimatedContainer } from '@/components/shared/animatedContainer';
-import { KanbanBoard } from '@/features/tasks/components/kanban-board';
+import { KanbanBoard } from '@/features/tasks/new-component/kanban-board';
 import { cookies } from 'next/headers';
 
 export default async function KanbanBoardPage() {
