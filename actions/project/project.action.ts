@@ -110,3 +110,42 @@ export async function deleteProjectAction(projectId: string) {
 		return { success: false, error: 'Failed to delete project.' };
 	}
 }
+
+export async function exportProjectTasksCsvAction(projectId: string) {
+	const cookieStore = await cookies();
+	const token = cookieStore.get('mpms_token')?.value;
+
+	try {
+		const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/projects/${projectId}/export/tasks`, {
+			method: 'GET', // CSV exports are typically GET requests
+			headers: {
+				...(token ? { Authorization: `Bearer ${token}` } : {}),
+			},
+		});
+
+		if (!res.ok) {
+			// Try to parse error message if backend returns JSON on fail
+			const errorData = await res.json().catch(() => ({}));
+			return { success: false, error: errorData.message || 'Failed to export CSV' };
+		}
+
+		// CSV data is returned as plain text, not JSON
+		const csvText = await res.text();
+
+		// Attempt to extract the filename from the backend's headers (if provided)
+		const contentDisposition = res.headers.get('Content-Disposition');
+		let filename = `project-${projectId}-tasks.csv`;
+
+		if (contentDisposition && contentDisposition.includes('filename=')) {
+			const match = contentDisposition.match(/filename="?([^"]+)"?/);
+			if (match && match[1]) {
+				filename = match[1];
+			}
+		}
+
+		return { success: true, data: csvText, filename };
+	} catch (error) {
+		console.error('Export CSV Error:', error);
+		return { success: false, error: 'Network error occurred while exporting.' };
+	}
+}
