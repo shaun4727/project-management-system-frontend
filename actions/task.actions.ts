@@ -73,6 +73,7 @@ export async function patchTaskAction(taskId: string, updateData: any) {
 	const token = cookieStore.get('mpms_token')?.value;
 
 	// SECURITY CHECK: If someone is trying to set the status to DONE
+	console.log(updateData);
 	if (updateData.status === 'DONE') {
 		const authRes = await getCurrentUserAction();
 		const currentUser = authRes.success ? authRes.data : null;
