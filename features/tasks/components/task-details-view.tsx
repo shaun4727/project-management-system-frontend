@@ -65,19 +65,21 @@ export function TaskDetailsView({ task }: TaskDetailsViewProps) {
 					<TabsList className="bg-transparent space-x-6 h-auto p-0 border-b-0 mt-8">
 						<TabsTrigger
 							value="details"
-							className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-3 font-semibold text-slate-500 data-[state=active]:text-indigo-600"
+							className="rounded-none border-0 border-b-2 border-transparent focus-visible:outline-none focus-visible:ring-0 data-[state=active]:border-b-indigo-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-3 font-semibold text-slate-500 data-[state=active]:text-indigo-600"
 						>
 							Details
 						</TabsTrigger>
+
 						<TabsTrigger
 							value="comments"
-							className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-3 font-semibold text-slate-500 data-[state=active]:text-indigo-600"
+							className="rounded-none border-0 border-b-2 border-transparent focus-visible:outline-none focus-visible:ring-0 data-[state=active]:border-b-indigo-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-3 font-semibold text-slate-500 data-[state=active]:text-indigo-600"
 						>
 							Comments ({isLoadingComments ? '...' : comments.length})
 						</TabsTrigger>
+
 						<TabsTrigger
 							value="time"
-							className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-3 font-semibold text-slate-500 data-[state=active]:text-indigo-600"
+							className="rounded-none border-0 border-b-2 border-transparent focus-visible:outline-none focus-visible:ring-0 data-[state=active]:border-b-indigo-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-3 font-semibold text-slate-500 data-[state=active]:text-indigo-600"
 						>
 							Time Logs ({isLoadingLogs ? '...' : timeLogs.length})
 						</TabsTrigger>
