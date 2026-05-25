@@ -20,9 +20,15 @@ export interface Comment {
 
 export interface TimeLog {
 	id: string;
-	hours: number;
+	hoursLogged: number;
 	description: string;
-	date: string;
+	createdAt: string; // Changed from 'date' to 'createdAt'
+	taskId: string;
+	userId: string;
+	user?: {
+		id: string;
+		name: string;
+	};
 }
 
 export interface TaskDetailsData {

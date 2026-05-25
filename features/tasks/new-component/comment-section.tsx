@@ -8,24 +8,25 @@ import { useActionState, useEffect, useRef } from 'react';
 
 interface CommentsSectionProps {
 	taskId: string;
-	comments: any[]; // The comments array fetched from the page level
+	comments: any[];
+	onCommentAdded: () => void;
 }
 
-export function CommentsSectionNew({ taskId, comments = [] }: CommentsSectionProps) {
-	// Bind the taskId to the Server Action
+export function CommentsSectionNew({ taskId, comments = [], onCommentAdded }: CommentsSectionProps) {
 	const postCommentWithId = addCommentAction.bind(null, taskId);
 	const [state, formAction, isPending] = useActionState(postCommentWithId, null);
 
 	const formRef = useRef<HTMLFormElement>(null);
 
-	// Clear the form after a successful post using the random key we sent from the action
+	// Watch specifically for the random 'clearForm' number to change
 	useEffect(() => {
-		if (state?.success) {
+		if (state?.success && state?.clearForm) {
 			formRef.current?.reset();
+			onCommentAdded();
 		}
-	}, [state?.clearForm]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [state?.clearForm]); // Only run when the server action completes successfully
 
-	// Helper to get initials for the avatar
 	const getInitials = (name: string) => {
 		if (!name) return '?';
 		return name
@@ -40,10 +41,8 @@ export function CommentsSectionNew({ taskId, comments = [] }: CommentsSectionPro
 		<div className="space-y-6">
 			<h3 className="text-lg font-bold text-slate-900">Comments ({comments.length})</h3>
 
-			{/* Post Comment Form */}
 			<form ref={formRef} action={formAction} className="flex gap-4">
 				<div className="h-10 w-10 shrink-0 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
-					{/* Hardcoded 'ME' for the current user's avatar in the input box */}
 					ME
 				</div>
 				<div className="flex-1 space-y-2">
@@ -73,7 +72,6 @@ export function CommentsSectionNew({ taskId, comments = [] }: CommentsSectionPro
 				</div>
 			</form>
 
-			{/* Comments List */}
 			<div className="space-y-5 mt-8">
 				{comments.length === 0 ? (
 					<p className="text-center text-sm text-slate-500 py-4">
@@ -82,13 +80,15 @@ export function CommentsSectionNew({ taskId, comments = [] }: CommentsSectionPro
 				) : (
 					comments.map((comment) => (
 						<div key={comment.id} className="flex gap-4 group">
+							{/* Changed to comment.author?.name */}
 							<div className="h-10 w-10 shrink-0 rounded-full bg-slate-100 border border-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm">
-								{getInitials(comment.user?.name)}
+								{getInitials(comment.author?.name)}
 							</div>
 							<div className="flex-1 bg-slate-50 border border-slate-100 rounded-2xl rounded-tl-none p-4 relative">
 								<div className="flex items-center justify-between mb-2">
+									{/* Changed to comment.author?.name */}
 									<span className="font-semibold text-slate-900 text-sm">
-										{comment.user?.name || 'Unknown User'}
+										{comment.author?.name || 'Unknown User'}
 									</span>
 									<span className="text-xs text-slate-400">
 										{new Date(comment.createdAt).toLocaleDateString('en-US', {

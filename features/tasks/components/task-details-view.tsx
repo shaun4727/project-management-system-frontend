@@ -1,8 +1,9 @@
 'use client';
 
 import { fetchCommentAction } from '@/actions/comment.action';
-import gsap from 'gsap';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { fetchTimeLogsAction } from '@/actions/time-log-action';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useCallback, useEffect, useState } from 'react';
 import { CommentsSectionNew } from '../new-component/comment-section';
 import { TaskDetailsData } from '../types/task.types';
 import { LogTimeForm } from './log-time-form';
@@ -13,77 +14,105 @@ interface TaskDetailsViewProps {
 	task: TaskDetailsData;
 }
 
-// CLIENT COMPONENT WRAPPER (Handles GSAP and Responsive Grid)
 export function TaskDetailsView({ task }: TaskDetailsViewProps) {
-	const containerRef = useRef<HTMLDivElement>(null);
+	// State for Comments
 	const [comments, setComments] = useState<any[]>([]);
 	const [isLoadingComments, setIsLoadingComments] = useState(true);
 
+	// State for Time Logs
+	const [timeLogs, setTimeLogs] = useState<any[]>([]);
+	const [isLoadingLogs, setIsLoadingLogs] = useState(true);
+
+	// Fetch Comments securely
+	const fetchComments = useCallback(async () => {
+		try {
+			const res = await fetchCommentAction(task.id);
+			if (res.success) setComments(res.data.data);
+		} catch (error) {
+			console.error('Error fetching comments:', error);
+		} finally {
+			setIsLoadingComments(false);
+		}
+	}, [task.id]);
+
+	// Fetch Time Logs securely
+	const fetchTimeLogs = useCallback(async () => {
+		try {
+			const res = await fetchTimeLogsAction(task.id);
+			if (res.success) setTimeLogs(res.data);
+		} catch (error) {
+			console.error('Error fetching time logs:', error);
+		} finally {
+			setIsLoadingLogs(false);
+		}
+	}, [task.id]);
+
+	// Initial load for both
 	useEffect(() => {
-		const fetchComments = async () => {
-			try {
-				const res = await fetchCommentAction(task.id);
-
-				if (res.success) {
-					// Update state with the API response
-					setComments(res.data.data);
-				} else {
-					console.error('Failed to fetch comments:', res.message);
-				}
-			} catch (error) {
-				console.error('Network error while fetching comments:', error);
-			} finally {
-				setIsLoadingComments(false);
-			}
-		};
-
 		if (task?.id) {
 			fetchComments();
+			fetchTimeLogs();
 		}
-	}, [task?.id]);
-
-	// GSAP Stagger animation for the panels
-	useLayoutEffect(() => {
-		const ctx = gsap.context(() => {
-			gsap.fromTo(
-				'.stagger-panel',
-				{ opacity: 0, y: 15 },
-				{ opacity: 1, y: 0, duration: 0.5, stagger: 0.1, ease: 'power2.out' },
-			);
-		}, containerRef);
-		return () => ctx.revert();
-	}, []);
+	}, [task?.id, fetchComments, fetchTimeLogs]);
 
 	return (
-		<div
-			ref={containerRef}
-			className="bg-white rounded-3xl w-full mx-auto overflow-hidden border border-slate-200 shadow-xl flex flex-col md:max-h-[95vh]"
-		>
-			{/* 3-Column Responsive Grid */}
-			<div className="grid grid-cols-1 lg:grid-cols-12 h-full overflow-y-auto lg:overflow-hidden">
-				{/* Column 1: Details & Subtasks */}
-				<div className="lg:col-span-5 p-6 lg:p-8 lg:overflow-y-auto custom-scrollbar stagger-panel">
+		<div className="bg-white rounded-3xl w-full mx-auto overflow-hidden border border-slate-200 shadow-xl flex flex-col md:max-h-[95vh]">
+			<Tabs defaultValue="details" className="flex flex-col h-full">
+				{/* Top Section: Header & Tab Triggers */}
+				<div className="p-6 lg:p-8 bg-white border-b border-slate-200 shrink-0">
 					<TaskHeader task={task} />
 
-					<div className="mt-8 space-y-6">
-						<div>
-							<h3 className="text-sm font-bold text-slate-900 mb-2">Description</h3>
-							<p className="text-sm text-slate-600 leading-relaxed">{task.description}</p>
+					<TabsList className="bg-transparent space-x-6 h-auto p-0 border-b-0 mt-8">
+						<TabsTrigger
+							value="details"
+							className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-3 font-semibold text-slate-500 data-[state=active]:text-indigo-600"
+						>
+							Details
+						</TabsTrigger>
+						<TabsTrigger
+							value="comments"
+							className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-3 font-semibold text-slate-500 data-[state=active]:text-indigo-600"
+						>
+							Comments ({isLoadingComments ? '...' : comments.length})
+						</TabsTrigger>
+						<TabsTrigger
+							value="time"
+							className="rounded-none border-b-2 border-transparent data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-3 font-semibold text-slate-500 data-[state=active]:text-indigo-600"
+						>
+							Time Logs ({isLoadingLogs ? '...' : timeLogs.length})
+						</TabsTrigger>
+					</TabsList>
+				</div>
+
+				{/* Bottom Section: Scrollable Tab Content */}
+				<div className="flex-1 overflow-y-auto p-6 lg:p-8 bg-slate-50/50 custom-scrollbar">
+					<TabsContent value="details" className="m-0 outline-none animate-in fade-in duration-300">
+						<div className="max-w-3xl">
+							<h3 className="text-sm font-bold text-slate-900 mb-3">Description</h3>
+							<div className="text-sm text-slate-600 leading-relaxed bg-white p-6 rounded-2xl border border-slate-100 shadow-sm whitespace-pre-wrap">
+								{task.description || 'No description provided.'}
+							</div>
 						</div>
-					</div>
-				</div>
+					</TabsContent>
 
-				{/* Column 2: Comments (Middle) */}
-				<div className="lg:col-span-4 border-t lg:border-t-0 lg:border-l lg:border-r border-slate-100 p-6 lg:p-8 lg:overflow-y-auto bg-white stagger-panel flex flex-col min-h-[400px]">
-					<CommentsSectionNew taskId={task.id} comments={comments} />
-				</div>
+					<TabsContent value="comments" className="m-0 outline-none animate-in fade-in duration-300">
+						<div className="max-w-3xl bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+							<CommentsSectionNew taskId={task.id} comments={comments} onCommentAdded={fetchComments} />
+						</div>
+					</TabsContent>
 
-				{/* Column 3: Time Logging (Right) */}
-				<div className="lg:col-span-3 p-6 lg:overflow-y-auto custom-scrollbar stagger-panel bg-white">
-					<LogTimeForm taskId={task.id} />
-					<TimeLogHistory logs={task.timeLogs} />
+					<TabsContent value="time" className="m-0 outline-none animate-in fade-in duration-300">
+						<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl">
+							{/* Pass fetchTimeLogs to the form so the list instantly updates after submitting */}
+							<LogTimeForm taskId={task.id} onTimeLogged={fetchTimeLogs} />
+
+							<div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+								<TimeLogHistory logs={timeLogs} />
+							</div>
+						</div>
+					</TabsContent>
 				</div>
-			</div>
+			</Tabs>
 		</div>
 	);
 }

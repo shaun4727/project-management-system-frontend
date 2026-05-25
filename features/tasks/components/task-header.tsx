@@ -7,7 +7,6 @@ interface TaskHeaderProps {
 	task: TaskDetailsData;
 }
 
-// DUMB COMPONENT (Can be rendered on the Server)
 export function TaskHeader({ task }: TaskHeaderProps) {
 	return (
 		<div className="space-y-6">
@@ -36,15 +35,10 @@ export function TaskHeader({ task }: TaskHeaderProps) {
 							<Avatar key={assignee.id} className="h-8 w-8 border-2 border-white shadow-sm">
 								{assignee.avatarUrl && <AvatarImage src={assignee.avatarUrl} />}
 								<AvatarFallback className="bg-indigo-100 text-indigo-700 text-xs font-bold">
-									{assignee.initials}
+									{assignee.initials || assignee.name?.substring(0, 2).toUpperCase()}
 								</AvatarFallback>
 							</Avatar>
 						))}
-						{task.assignees.length > 2 && (
-							<div className="h-8 w-8 rounded-full bg-slate-100 border-2 border-white flex items-center justify-center text-xs font-bold text-slate-600 shadow-sm z-10">
-								+{task.assignees.length - 2}
-							</div>
-						)}
 					</div>
 				</div>
 
@@ -57,25 +51,13 @@ export function TaskHeader({ task }: TaskHeaderProps) {
 
 				<div className="flex items-center gap-4">
 					<div className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-200">
-						<Target className="h-4 w-4 text-red-500" /> {task.estimatedHours}h
+						<Target className="h-4 w-4 text-red-500" /> {task.estimatedHours || 0}h
 					</div>
 					<div className="flex items-center gap-1.5 text-sm font-semibold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200">
-						<Clock className="h-4 w-4" /> {task.loggedHours}h
+						<Clock className="h-4 w-4" /> {task.loggedHours || 0}h
 					</div>
 				</div>
 			</div>
-
-			{/* Tabs Menu */}
-			<nav className="flex overflow-x-auto border-b border-slate-200 hide-scrollbar gap-6 pt-2">
-				{['Details', 'Comments 3', 'Attachments 2', 'Time Logs 4', 'Activity'].map((tab, i) => (
-					<div
-						key={tab}
-						className={`pb-3 text-sm font-semibold whitespace-nowrap cursor-pointer ${i === 0 ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-slate-500 hover:text-slate-900'}`}
-					>
-						{tab}
-					</div>
-				))}
-			</nav>
 		</div>
 	);
 }
