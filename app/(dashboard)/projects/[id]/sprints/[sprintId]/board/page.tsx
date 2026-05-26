@@ -1,5 +1,5 @@
 import { AnimatedContainer } from '@/components/shared/animatedContainer';
-import { KanbanBoard } from '@/features/tasks/components/kanban-board';
+
 import { TaskBoardFilters } from '@/features/tasks/components/task-board-filter';
 
 // MOCK DATA: Perfectly matching the data in Image 4
@@ -121,7 +121,7 @@ export default async function SprintBoardPage({ params }: { params: { projectId:
 			{/* Main Kanban Board Area */}
 			<div className="flex-1 mt-2 gsap-item">
 				{/* Client Component: Handles Drag and Drop physics and UI state */}
-				<KanbanBoard initialTasks={mockTasks} />
+
 			</div>
 		</AnimatedContainer>
 	);
