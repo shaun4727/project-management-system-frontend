@@ -3,34 +3,62 @@
 import { Bell, Menu } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { UserProfileDropdown } from '../shared/navbar/user-profile-dropdown';
 import { Sidebar } from '../shared/sidebar/Sidebar';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
 	const pathname = usePathname();
+	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-	// Check if we are on an authentication route
+	// Automatically close mobile menu drawer when route shifts
+	useEffect(() => {
+		setIsMobileMenuOpen(false);
+	}, [pathname]);
+
 	const isAuthRoute = pathname === '/login' || pathname?.startsWith('/register');
 
-	// If it is the login page, just return the page content with NO sidebar
 	if (isAuthRoute) {
 		return <div className="flex-1 flex flex-col">{children}</div>;
 	}
 
-	// Otherwise, render the full Dashboard Layout with the Sidebar
 	return (
 		<div className="flex flex-1 h-[100vh] bg-[#f8fafc] text-slate-900 overflow-hidden font-sans">
-			{/* DESKTOP SIDEBAR */}
+			{/* DESKTOP SIDEBAR (Remains completely untouched) */}
 			<Sidebar />
 
 			<div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 				{/* TOP NAVIGATION BAR */}
 				<header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 lg:px-8 shrink-0 z-10">
 					<div className="flex-1 flex items-center gap-4">
-						<button className="md:hidden p-2 -ml-2 text-slate-500 hover:text-slate-700 rounded-lg hover:bg-slate-50">
-							<Menu className="h-5 w-5" />
-						</button>
+						{/* --- SHADCN MOBILE RESPONSIVE DRAWER --- */}
+						<Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+							<SheetTrigger asChild>
+								<Button
+									variant="ghost"
+									size="icon"
+									className="md:hidden -ml-2 text-slate-500 hover:text-slate-700"
+								>
+									<Menu className="h-5 w-5" />
+									<span className="sr-only">Toggle navigation menu</span>
+								</Button>
+							</SheetTrigger>
+							<SheetContent side="left" className="p-0 w-64 bg-white border-r border-slate-200">
+								{/* Visually Hidden Title for Screen Readers accessibility compliance */}
+								<SheetHeader className="sr-only">
+									<SheetTitle>Navigation Menu</SheetTitle>
+								</SheetHeader>
+								{/* Reusing your exact Sidebar logic, forcing it visible inside the portal drawer */}
+								<div className="h-full ![display:flex] w-full">
+									<Sidebar isMobileWrapper />
+								</div>
+							</SheetContent>
+						</Sheet>
 					</div>
+
 					<div className="flex items-center gap-3 sm:gap-4">
 						<button className="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-50 transition-colors">
 							<Bell className="h-5 w-5" />
@@ -44,7 +72,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 				<main className="flex-1 overflow-y-auto pb-20 md:pb-0 relative">{children}</main>
 			</div>
 
-			{/* MOBILE BOTTOM NAVIGATION (Matches your Image 10 requirement) */}
+			{/* MOBILE BOTTOM NAVIGATION */}
 			<nav className="md:hidden fixed bottom-0 w-full bg-white border-t border-slate-200 pb-safe z-50">
 				<div className="flex items-center justify-around h-16 px-2">
 					<Link
@@ -64,7 +92,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 						href="/projects"
 						className="flex flex-col items-center justify-center w-full h-full space-y-1 text-slate-500 hover:text-slate-900"
 					>
-						{/* ... SVG for Projects ... */}
 						<span className="text-[10px] font-medium">Projects</span>
 					</Link>
 				</div>

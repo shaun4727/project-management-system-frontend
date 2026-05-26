@@ -14,28 +14,35 @@ const MAIN_NAV = [
 	{ name: 'Task Board', href: '/tasks/board', icon: FolderKanban },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+	isMobileWrapper?: boolean;
+}
+
+export function Sidebar({ isMobileWrapper = false }: SidebarProps) {
 	const pathname = usePathname();
 	const { user } = useAuth();
 
 	const filteredNav = MAIN_NAV.filter((item) => {
-		// Only Admins (and maybe Managers) can see the Team tab
 		if (item.name === 'Team' && user?.role !== 'ADMIN') return false;
 		return true;
 	});
 
 	const matchingItems = filteredNav.filter((item) => {
 		if (item.href === '/') {
-			return pathname === '/'; // Exact match for home
+			return pathname === '/';
 		}
-		// Match exact route OR sub-routes (e.g., /projects/123)
 		return pathname === item.href || pathname.startsWith(`${item.href}/`);
 	});
 	const activeItem = matchingItems.sort((a, b) => b.href.length - a.href.length)[0];
 
 	return (
-		<aside className="hidden md:flex w-64 flex-col border-r border-slate-200 bg-white">
-			<div className="flex h-16 items-center px-6 border-b border-slate-100">
+		<aside
+			className={cn(
+				'w-64 flex-col border-r border-slate-200 bg-white h-full',
+				isMobileWrapper ? 'flex' : 'hidden md:flex', // Overrides hidden flag if mounted inside Sheet
+			)}
+		>
+			<div className="flex h-16 items-center px-6 border-b border-slate-100 shrink-0">
 				<div className="flex items-center gap-2 text-primary font-bold text-xl">
 					<div className="bg-indigo-600 text-white p-1.5 rounded-lg text-sm">M</div>
 					MPMS
@@ -44,7 +51,6 @@ export function Sidebar() {
 
 			<div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
 				{filteredNav.map((item) => {
-					// 3. Compare the current item against our "winning" active item
 					const isActive = activeItem?.href === item.href;
 
 					return (
