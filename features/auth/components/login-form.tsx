@@ -4,11 +4,24 @@ import { loginAction } from '@/actions/auth.actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2 } from 'lucide-react';
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 
 export function LoginForm() {
 	// useActionState takes the server action and an initial state (null)
 	const [state, formAction, isPending] = useActionState(loginAction, null);
+
+	const [email, setEmail] = useState('');
+	const [password, setPassword] = useState('');
+
+	const setCredentialMethod = (type: string) => {
+		if (type === 'user') {
+			setEmail('shaun.mononsoft@gmail.com');
+			setPassword('tempPassword123');
+		} else if (type === 'admin') {
+			setEmail('admin@alien-tech.com');
+			setPassword('supersecure123');
+		}
+	};
 
 	return (
 		<form
@@ -18,6 +31,23 @@ export function LoginForm() {
 			<div className="text-center mb-6">
 				<h2 className="text-2xl font-bold text-slate-900">Welcome Back</h2>
 				<p className="text-sm text-slate-500">Sign in to MPMS</p>
+			</div>
+
+			<div className="flex gap-3 ">
+				<Button
+					variant="default"
+					onClick={() => setCredentialMethod('user')}
+					className="bg-blue-600  hover:bg-blue-700 text-white flex items-center  justify-center gap-2 py-3 cursor-pointer"
+				>
+					Sign In with Member
+				</Button>
+				<Button
+					onClick={() => setCredentialMethod('admin')}
+					variant="default"
+					className="bg-cyan-400 hover:bg-cyan-500 text-white flex items-center justify-center gap-2 py-3 cursor-pointer "
+				>
+					Sign In with Admin
+				</Button>
 			</div>
 
 			{/* Display Error from Server Action */}
@@ -33,6 +63,8 @@ export function LoginForm() {
 					placeholder="admin@datapollex.com"
 					required
 					className="bg-slate-50 border-slate-200"
+					value={email}
+					onChange={(e) => setEmail(e.target.value)}
 				/>
 			</div>
 
@@ -44,6 +76,8 @@ export function LoginForm() {
 					placeholder="••••••••"
 					required
 					className="bg-slate-50 border-slate-200"
+					value={password}
+					onChange={(e) => setPassword(e.target.value)}
 				/>
 			</div>
 
